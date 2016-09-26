@@ -9,7 +9,9 @@ import urllib2
 
 # Gehirn API endpoints
 ENDPOINTS = dict(
-    zones="https://api.gis.gehirn.jp/dns/v1/zones"
+    base="https://api.gis.gehirn.jp",
+    zones="/dns/v1/zones",
+    records="/dns/v1/zones/{id}/versions/{current_version_id}/records",
 )
 
 
@@ -42,6 +44,7 @@ class GehirnClient(object):
             config.write(fp)
 
     def request_get(self, url):
+        url = ENDPOINTS['base'] + url
         req = urllib2.Request(url)
         req.add_header('Authorization', 'Basic {}'.format(self.credential))
         try:
@@ -59,10 +62,26 @@ class GehirnClient(object):
             zone_dict[z['name']] = z
         return zone_dict
 
-    def get_zone(self, name):
+    def get_zone(self, zone_name):
         zones = self.get_all_zones()
         try:
-            tgt_zone = zones[name]
+            tgt_zone = zones[zone_name]
         except KeyError:
             tgt_zone = None
         return tgt_zone
+
+    def get_all_records(self, zone_name):
+        zone = self.get_zone(zone_name)
+        records = self.request_get(ENDPOINTS['records'].format(**zone))
+        record_dict = dict()
+        for r in records:
+            record_dict[r['name'][:-1]] = r  # remove a period at the end
+        return record_dict
+
+    def get_record(self, zone_name, record_name):
+        records = self.get_all_records(zone_name)
+        try:
+            tgt_record = records[record_name]
+        except KeyError:
+            tgt_record = None
+        return tgt_record

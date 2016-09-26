@@ -9,7 +9,7 @@ import urllib2
 
 # Gehirn API endpoints
 ENDPOINTS = dict(
-    zones="https://api.gis.gehirn.jp/dns/v1/zones/"
+    zones="https://api.gis.gehirn.jp/dns/v1/zones"
 )
 
 

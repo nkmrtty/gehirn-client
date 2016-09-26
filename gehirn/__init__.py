@@ -58,3 +58,11 @@ class GehirnClient(object):
         for z in zones:
             zone_dict[z['name']] = z
         return zone_dict
+
+    def get_zone(self, name):
+        zones = self.get_all_zones()
+        try:
+            tgt_zone = zones[name]
+        except KeyError:
+            tgt_zone = None
+        return tgt_zone

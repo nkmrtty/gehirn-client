@@ -12,6 +12,7 @@ ENDPOINTS = dict(
     base="https://api.gis.gehirn.jp",
     zones="/dns/v1/zones",
     records="/dns/v1/zones/{id}/versions/{current_version_id}/records",
+    record="/{id}"
 )
 
 
@@ -54,6 +55,21 @@ class GehirnClient(object):
             sys.exit(1)
         return json.loads(res.read())
 
+    def request_put(self, url, data):
+        url = ENDPOINTS['base'] + url
+        req = urllib2.Request(url, data=json.dumps(data))
+        req.add_header('Authorization', 'Basic {}'.format(self.credential))
+        req.add_header('Content-Type', 'application/json')
+        req.get_method = lambda: "PUT"
+
+        try:
+            res = urllib2.urlopen(req)
+        except urllib2.HTTPError as e:
+            print "{}: {}".format(e, url)
+            sys.exit(1)
+
+        return json.loads(res.read())
+
     def get_all_zones(self):
         zones = self.request_get(ENDPOINTS['zones'])
         # formatting
@@ -85,3 +101,12 @@ class GehirnClient(object):
         except KeyError:
             tgt_record = None
         return tgt_record
+
+    def update_record(self, zone_name, record_name, values):
+        zone = self.get_zone(zone_name)
+        record = self.get_record(zone_name, record_name)
+        for k, v in values.iteritems():
+            record[k] = v
+        url = ENDPOINTS['records'].format(**zone) \
+            + ENDPOINTS['record'].format(**record)
+        return self.request_put(url, record)

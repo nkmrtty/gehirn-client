@@ -53,4 +53,8 @@ class GehirnClient(object):
 
     def get_all_zones(self):
         zones = self.request_get(ENDPOINTS['zones'])
-        return zones
+        # formatting
+        zone_dict = dict()
+        for z in zones:
+            zone_dict[z['name']] = z
+        return zone_dict
